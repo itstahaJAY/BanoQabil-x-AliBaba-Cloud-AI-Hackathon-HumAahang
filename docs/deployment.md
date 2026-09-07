@@ -1,5 +1,11 @@
 # Railway hackathon demo
 
+## Live release verification — 2026-09-07
+
+[Open Hum Ahang](https://humahang-production.up.railway.app). Railway deployment `c16fb47e-c53f-46e8-8cf8-d21743963d10` reached `SUCCESS` from GitHub commit `c9e71ce`; the actual Docker build succeeded. The deployed onboarding screen rendered in the browser. Home, health, transcription, vision and speech-setup URLs returned 200; environment-file URLs and unknown API routes returned 404.
+
+With explicit operator approval, the deployed authentication → OpenAI STT → DeepSeek bilingual WebSocket path produced two validated English/Urdu caption pairs from synthetic English speech, with zero errors and a clean stop. OpenAI image analysis returned seven objects from non-sensitive bundled artwork, and Urdu translation retained all seven. The temporary QA grant was revoked. This proves deployed connectivity/flow, not human Urdu accuracy or physical-device microphone/camera quality; complete the short user QA below.
+
 ## Architecture and scope
 
 The Dockerfile builds the Expo web app and serves its static export from the same Node service as the existing HTTP/WebSocket backend. HTTPS web clients discover that same origin automatically. Local Expo on port 8081 and native clients retain their existing local backend default; `EXPO_PUBLIC_STT_URL` remains an explicit override. No provider keys are embedded in the web build.

@@ -4,7 +4,9 @@ HumAhang is an Urdu-first accessibility companion for the Bano Qabil × Alibaba 
 
 ## Hackathon web demo
 
-The deployment target is **https://humahang-production.up.railway.app**. One Railway service hosts the web app and its authenticated AI backend. See the [deployment and three-minute demo QA guide](docs/deployment.md) for release verification, operator pairing, and limitations. The app can be browsed without pairing; cloud microphone/photo features require a one-time operator connection code. Never put API keys or the operator token into the frontend.
+**[Open the live demo](https://humahang-production.up.railway.app)** — one Railway service hosts the web app and its authenticated AI backend. See the [deployment and three-minute demo QA guide](docs/deployment.md) for release verification, operator pairing, and limitations. The app can be browsed without pairing; cloud microphone/photo features require a one-time operator connection code. Never put API keys or the operator token into the frontend.
+
+Cloud verification passed on 2026-09-07: public app/health routes, authenticated pairing, two synthetic English/Urdu caption pairs, photo analysis, and Urdu image-result translation. Historical local-only setup notes below describe development; the deployment guide supersedes those hosting restrictions. The current caption provider is OpenAI, with Deepgram retained only as an explicit operator rollback.
 
 An accessibility and communication assistant prototype for Pakistan, built with Expo/React Native. Live Captions streams microphone audio through the local OpenAI/DeepSeek backend for Urdu-first bilingual output. AI Vision and the experimental Sign Assistant send explicitly captured photos through the backend to OpenAI and can read the results with the device's voice. AI Vision has independent English/Urdu/Roman Urdu result controls with text-only translation and per-photo caching. The Sign Assistant recognizes a small set of static hand poses; it does not translate sign language. The user confirmed phone object detection works; translation controls and broader physical-device acceptance still need the focused QA.
 
