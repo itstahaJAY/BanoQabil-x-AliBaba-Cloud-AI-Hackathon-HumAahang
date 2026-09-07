@@ -1,0 +1,45 @@
+{
+  "expo": {
+    "name": "Hum Ahang",
+    "slug": "hum-ahang",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "scheme": "humahang",
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "com.humahang.mobile",
+      "adaptiveIcon": {
+        "backgroundColor": "#E6F4FE",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      ["expo-camera", {
+        "cameraPermission": "Allow Hum Ahang to take photos you choose to analyze with AI.",
+        "recordAudioAndroid": false
+      }],
+      ["react-native-audio-api", {
+        "iosMicrophonePermission": "Allow Hum Ahang to capture speech you choose to transcribe and translate.",
+        "iosBackgroundMode": false,
+        "androidPermissions": ["android.permission.RECORD_AUDIO"],
+        "androidForegroundService": false,
+        "androidFSTypes": []
+      }],
+      ["expo-speech-recognition", {
+        "microphonePermission": "Allow Hum Ahang to hear speech you choose to turn into a message.",
+        "speechRecognitionPermission": "Allow Hum Ahang to transcribe speech using your device's speech service. Audio may be processed online."
+      }]
+    ]
+  }
+}

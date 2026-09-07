@@ -1,0 +1,13 @@
+{
+  "name": "hum-ahang-stt-backend",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22.17.0" },
+  "scripts": {
+    "start": "node --env-file-if-exists=.env index.mjs",
+    "test": "node --test test/*.test.mjs",
+    "smoke": "node --env-file-if-exists=.env smoke.mjs",
+    "pair": "node --env-file-if-exists=.env pair.mjs"
+  },
+  "dependencies": { "ws": "8.21.3" }
+}
