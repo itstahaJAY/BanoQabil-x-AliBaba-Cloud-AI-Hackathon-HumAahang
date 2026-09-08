@@ -12,6 +12,12 @@ An accessibility and communication assistant prototype for Pakistan, built with 
 
 **OpenAI caption migration:** recognition now defaults to `gpt-4o-transcribe` using the existing server-only OpenAI key. Image analysis keeps its separate `gpt-4.1-mini` model. DeepSeek paired translation, device TTS and chat/FTF are retained. Follow the [restart, rollback and six-step QA](docs/openai-stt-migration.md). This supersedes historical Deepgram-default references below; `STT_PROVIDER=deepgram` remains an explicit operator rollback, never an automatic replay.
 
+## Workflow
+
+[![Hum Ahang — complete app workflow](docs/assets/hum-ahang-workflow.svg)](docs/assets/hum-ahang-workflow.svg)
+
+**[Explore the complete workflow](docs/workflow.md)** — six feature journeys, private judge access, cloud/device boundaries, gesture mappings and honest MVP limitations. The diagram is an editable SVG; the detailed guide includes a text equivalent and Mermaid architecture diagram.
+
 ## Run
 
 ```bash
