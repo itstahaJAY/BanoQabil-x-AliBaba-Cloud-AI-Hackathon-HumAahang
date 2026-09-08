@@ -56,12 +56,14 @@ export function createJudgeAccessClient(options: {
       if (disposed || controller.signal.aborted) return;
       if (raw.length > 4096) { publish('error', judgeAccessMessages.invalidResponse); return; }
       const grant = JSON.parse(raw);
+      const receivedAt = Date.now();
+      // Bounded clock-skew allowance; local retention stays at most one hour.
       if (!grant || typeof grant.token !== 'string' || !/^[A-Za-z0-9_-]{20,128}$/.test(grant.token) ||
-          !Number.isFinite(grant.expiresAt) || grant.expiresAt <= Date.now() || grant.expiresAt > Date.now() + 3660000) {
+          !Number.isFinite(grant.expiresAt) || grant.expiresAt <= receivedAt || grant.expiresAt > receivedAt + 3900000) {
         publish('error', judgeAccessMessages.invalidResponse); return;
       }
       // Preserve a grant established (or cleared) by a different flow meanwhile.
-      if (options.credentials.current === originalCredential) options.credentials.current = { token: grant.token, expiresAt: grant.expiresAt };
+      if (options.credentials.current === originalCredential) options.credentials.current = { token: grant.token, expiresAt: Math.min(grant.expiresAt, receivedAt + 3600000) };
       if (connected()) publish('connected'); else publish('error', judgeAccessMessages.unavailable);
     } catch { if (!disposed) publish('error', judgeAccessMessages.unavailable); }
     finally { clearTimeout(timeout); if (active === controller) active = null; }

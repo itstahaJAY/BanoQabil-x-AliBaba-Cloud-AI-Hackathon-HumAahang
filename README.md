@@ -4,7 +4,7 @@ HumAhang is an Urdu-first accessibility companion for the Bano Qabil × Alibaba 
 
 ## Hackathon web demo
 
-**[Open the live demo](https://humahang-production.up.railway.app)** — one Railway service hosts the web app and its authenticated AI backend. See the [deployment and three-minute demo QA guide](docs/deployment.md) for release verification, operator pairing, and limitations. The app can be browsed without pairing; cloud microphone/photo features require a one-time operator connection code. Never put API keys or the operator token into the frontend.
+**[Open the live demo](https://humahang-production.up.railway.app)** — one Railway service hosts the web app and its authenticated AI backend. Evaluators can use the separate **private judge link** supplied in the submission: it connects cloud speech/photo features without a terminal or one-time code. The ordinary homepage remains browsable without credentials; operator pairing is still available as a fallback. See [private judge access and QA](docs/judge-access.md) for expiry, shared usage limits, reconnection and rollback, or the [deployment guide](docs/deployment.md) for operator setup. Never publish the private invitation, API keys or operator token in this repository.
 
 Cloud verification passed on 2026-09-07: public app/health routes, authenticated pairing, two synthetic English/Urdu caption pairs, photo analysis, and Urdu image-result translation. Historical local-only setup notes below describe development; the deployment guide supersedes those hosting restrictions. The current caption provider is OpenAI, with Deepgram retained only as an explicit operator rollback.
 

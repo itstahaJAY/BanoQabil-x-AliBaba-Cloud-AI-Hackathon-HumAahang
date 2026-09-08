@@ -120,9 +120,12 @@ export function createCaptionClient(options: {
     try {
       const grant = await post('/v1/stt/clients', { code: code.trim() }, controller.signal, false);
       if (disposed || controller.signal.aborted || pairing !== controller) return;
+      const receivedAt = Date.now();
+      // Allow five minutes of clock skew, without extending the local session or
+      // the server-enforced grant lifetime. Some phones/PCs run behind Railway.
       if (typeof grant.token !== 'string' || !/^[a-zA-Z0-9_-]{20,128}$/.test(grant.token) ||
-          !Number.isFinite(grant.expiresAt) || grant.expiresAt <= Date.now() || grant.expiresAt > Date.now() + 3660000) throw problem('invalid_response');
-      credentials.current = { token: grant.token, expiresAt: grant.expiresAt }; publish({ message: '', phase: 'idle' });
+          !Number.isFinite(grant.expiresAt) || grant.expiresAt <= receivedAt || grant.expiresAt > receivedAt + 3900000) throw problem('invalid_response');
+      credentials.current = { token: grant.token, expiresAt: Math.min(grant.expiresAt, receivedAt + 3600000) }; publish({ message: '', phase: 'idle' });
     } catch (error) { if (!disposed && pairing === controller) publish({ message: messageFor(error, 'server_unavailable') }); }
     finally { clearTimeout(timeout); if (pairing === controller) { pairing = null; publish(); } }
   }
