@@ -9,7 +9,7 @@ const appRoutes = new Set([
   '/(tabs)/communicate', '/(tabs)/profile', '/contact-qr', '/conversation',
   '/emergency-settings', '/emergency', '/history', '/onboarding', '/partner',
   '/passport-settings', '/passport', '/quick-speak', '/settings', '/sign-assistant',
-  '/speech-setup', '/transcription', '/vision',
+  '/speech-setup', '/transcription', '/vision', '/demo',
 ]);
 const mediaTypes = new Map([
   ['.png', 'image/png'], ['.jpg', 'image/jpeg'], ['.jpeg', 'image/jpeg'],

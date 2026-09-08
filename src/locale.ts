@@ -6,6 +6,7 @@ import { navigationGestureRows } from './navigation-gesture-copy.ts';
 import { captionSimpleRows } from './caption-simple-copy.ts';
 import { photoCaptureRows } from './photo-capture-copy.ts';
 import { visionRows } from './vision-copy.ts';
+import { judgeAccessRows } from './judge-access-copy.ts';
 
 export const languageChoices = ['English', 'اردو', 'Roman Urdu'] as const;
 export type AppLanguage = typeof languageChoices[number];
@@ -72,7 +73,7 @@ The speech server is busy. Wait a moment and try again.|گفتگو کا سرور
 Microphone or speech connection took too long to start. Please retry.|مائیک یا گفتگو کا رابطہ شروع ہونے میں زیادہ وقت لگا۔ دوبارہ کوشش کریں۔|Mic ya guftagu ka raabta shuru hone mein zyada waqt laga. Dobara koshish karein.
 Finishing speech took too long. Completed captions are unchanged.|گفتگو مکمل ہونے میں زیادہ وقت لگا۔ مکمل متن موجود ہے۔|Guftagu mukammal hone mein zyada waqt laga. Mukammal matn maujood hai.
 `.trim().split('\n').map(line => line.split('|'));
-for (const [en, ur, roman] of [...translationRows, ...captionRows, ...captionInputRows, ...navigationGestureRows, ...captionSimpleRows, ...photoCaptureRows, ...visionRows]) {
+for (const [en, ur, roman] of [...translationRows, ...captionRows, ...captionInputRows, ...navigationGestureRows, ...captionSimpleRows, ...photoCaptureRows, ...visionRows, ...judgeAccessRows]) {
   catalogs.ur.set(normalize(en), ur);
   catalogs.roman.set(normalize(en), roman);
 }

@@ -27,7 +27,11 @@ export function createSpeechServer(config, dependencies = {}) {
   const analyzeVision = dependencies.analyzeVision ?? createVisionAnalyzer(config, dependencies.visionFetch);
   const translateVision = dependencies.translateVision ?? createVisionTranslator(config, dependencies.visionFetch);
   const visionRequests = new Set();
-  const access = createClientAccess();
+  const access = createClientAccess({ now: dependencies.now ?? Date.now,
+    judge: config.deployment === 'public' && config.judgeAccessKey ? {
+      accessKey: config.judgeAccessKey, expiresAt: config.judgeAccessExpiresAt,
+      origin: config.publicUrl, limits: config.judgeLimits,
+    } : undefined });
   const serveStaticWeb = config.deployment === 'public' && config.webRoot ? createStaticWebHandler(config.webRoot) : undefined;
   let closing = false, requests = 0, visionCount = 0, rateWindow = Date.now();
   const prune = () => { for (const [key, value] of tickets) if (value.expiresAt <= Date.now()) tickets.delete(key); };
@@ -55,7 +59,10 @@ export function createSpeechServer(config, dependencies = {}) {
     }
     if (req.method === 'GET' && req.url === '/health') { reply(res, 200, { status: 'ok', service: 'humahang-stt', version: 1 }); return; }
     if (serveStaticWeb && await serveStaticWeb(req, res)) return;
-    if (!['/v1/stt/sessions', '/v1/stt/clients', '/v1/stt/pairing-codes', '/v1/vision/analyze', '/v1/vision/translate'].includes(req.url)) { reply(res, 404, { code: 'not_found' }); return; }
+    if (!['/v1/demo/clients', '/v1/stt/sessions', '/v1/stt/clients', '/v1/stt/pairing-codes', '/v1/vision/analyze', '/v1/vision/translate'].includes(req.url)) { reply(res, 404, { code: 'not_found' }); return; }
+    if (req.url === '/v1/demo/clients' && !access.judgeAvailable(req.headers.origin)) {
+      reply(res, 404, { code: 'judge_unavailable' }); return;
+    }
     if (req.method === 'OPTIONS') {
       res.setHeader('Access-Control-Allow-Methods', 'POST, DELETE'); res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type');
       reply(res, 204); return;
@@ -93,6 +100,9 @@ export function createSpeechServer(config, dependencies = {}) {
         if (!operator && !access.authorize(req.headers.authorization, req.headers.origin)) { reply(res, 401, { code: 'unauthorized' }); return; }
         // Recheck after upload; another request may have filled the provider capacity.
         if (visionRequests.size >= (config.maxVisionRequests ?? 2)) { reply(res, 429, { code: 'vision_busy' }); return; }
+        if (!operator && !access.reserve(req.headers.authorization, req.headers.origin, 'vision')) {
+          reply(res, 429, { code: 'judge_limit' }); return;
+        }
         const controller = new AbortController();
         const abort = () => { if (!res.writableEnded) controller.abort(); };
         visionRequests.add(controller); res.once('close', abort);
@@ -102,6 +112,11 @@ export function createSpeechServer(config, dependencies = {}) {
           reply(res, 200, isTranslation ? validateVisionTranslationResult(result, input) : validateVisionResult(result, input));
         } finally { res.removeListener('close', abort); visionRequests.delete(controller); }
         return;
+      }
+      if (req.url === '/v1/demo/clients') {
+        const result = Object.keys(body).length === 1 ? access.judgeGrant(body.accessKey, req.headers.origin) : { code: 'judge_invalid' };
+        reply(res, result.grant ? 201 : result.code === 'judge_unavailable' ? 404 : result.code === 'judge_limit' ? 429 : 401,
+          result.grant ?? { code: result.code }); return;
       }
       if (req.url === '/v1/stt/clients') {
         const grant = body && Object.keys(body).length === 1 ? access.pair(body.code, req.headers.origin) : null;
@@ -114,6 +129,10 @@ export function createSpeechServer(config, dependencies = {}) {
       if (!validateAudio(body)) { reply(res, 400, { code: 'invalid_audio_config' }); return; }
       prune();
       if (sessions.size + tickets.size >= maxSessions) { reply(res, 429, { code: 'capacity_reached' }); return; }
+      if (!operator && !access.authorize(req.headers.authorization, req.headers.origin)) { reply(res, 401, { code: 'unauthorized' }); return; }
+      if (!operator && !access.reserve(req.headers.authorization, req.headers.origin, 'speech')) {
+        reply(res, 429, { code: 'judge_limit' }); return;
+      }
       const ticket = randomBytes(32).toString('base64url'), expiresAt = Date.now() + ticketTtlMs;
       tickets.set(ticket, { audio: body.audio, mode: body.mode, inputLanguage: body.inputLanguage, origin: req.headers.origin, expiresAt,
         authorization: operator ? undefined : req.headers.authorization });

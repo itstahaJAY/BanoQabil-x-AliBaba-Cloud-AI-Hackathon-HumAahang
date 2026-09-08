@@ -4,6 +4,8 @@ import { Pressable, Text, TextInput, SafeAreaView, Ionicons } from '../src/local
 import { Header } from '../src/components';
 import { router } from '../src/navigation';
 import { useLiveCaptions } from '../src/use-live-captions';
+import { captionClientMessages } from '../src/caption-client';
+import { normalizePairingCode } from '../src/pairing-code';
 import { colors, radius, space } from '../src/theme';
 
 export default function SpeechSetup() {
@@ -20,8 +22,10 @@ export default function SpeechSetup() {
   };
   const connect = async () => {
     if (pairing || !code.trim()) return;
+    const normalized = normalizePairingCode(code);
+    if (!normalized) { setNotice(captionClientMessages.pairing_failed); return; }
     setPairing(true); setNotice('');
-    try { await voice.connect(code.trim()); }
+    try { await voice.connect(normalized); }
     catch { if (mounted.current) setNotice('Could not connect. Check the server and request a fresh pairing code.'); }
     finally { if (mounted.current) setPairing(false); }
   };
@@ -35,7 +39,7 @@ export default function SpeechSetup() {
         {voice.connected ? <Pressable accessibilityRole="button" accessibilityLabel="Disconnect speech server" onPress={() => { voice.disconnect(); setNotice(''); }} style={s.secondary}><Ionicons name="unlink-outline" size={20} color={colors.primaryDark} accessible={false}/><Text style={s.secondaryText}>Disconnect speech server</Text></Pressable> : <>
           <Text style={s.help}>Use the one-time pairing code from your local speech server. Do not enter an API key.</Text>
           <Text style={s.label}>Pairing code</Text>
-          <TextInput accessibilityLabel="Pairing code" value={code} onChangeText={value => { setCode(value); setNotice(''); }} placeholder="Enter pairing code" autoCapitalize="none" autoCorrect={false} secureTextEntry maxLength={10} editable={!pairing} onSubmitEditing={() => { void connect(); }} style={s.input}/>
+          <TextInput accessibilityLabel="Pairing code" value={code} onChangeText={value => { setCode(normalizePairingCode(value) ?? value); setNotice(''); }} placeholder="Enter pairing code" autoCapitalize="none" autoCorrect={false} secureTextEntry editable={!pairing} onSubmitEditing={() => { void connect(); }} style={s.input}/>
           <Pressable accessibilityRole="button" accessibilityState={{ disabled: pairing || !code.trim(), busy: pairing }} {...(Platform.OS === 'web' ? { 'aria-busy': pairing } : {})} disabled={pairing || !code.trim()} onPress={() => { void connect(); }} style={({ pressed }) => [s.primary, (pressed || pairing || !code.trim()) && s.dim]}><Text style={s.primaryText}>{pairing ? 'Connecting speech server…' : 'Connect'}</Text></Pressable>
         </>}
         {!!(notice || voice.message) && <Text accessibilityRole="alert" style={s.error}>{notice || voice.message}</Text>}

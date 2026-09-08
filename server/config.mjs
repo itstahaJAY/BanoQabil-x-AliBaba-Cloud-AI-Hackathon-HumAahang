@@ -45,11 +45,27 @@ export function readConfig(env = process.env) {
   // different session contracts must not be selected by an unchecked env value.
   const openaiSttModel = env.OPENAI_STT_MODEL ?? 'gpt-4o-transcribe';
   if (!['gpt-4o-transcribe', 'gpt-4o-mini-transcribe'].includes(openaiSttModel)) throw new Error('Invalid OPENAI_STT_MODEL.');
+  const judgeAccessKey = env.JUDGE_ACCESS_KEY || undefined;
+  const judgeDeadline = env.JUDGE_ACCESS_EXPIRES_AT || undefined;
+  let judgeAccessExpiresAt;
+  if (judgeAccessKey || judgeDeadline) {
+    if (!isPublic || !judgeAccessKey || !/^[A-Za-z0-9_-]{43}$/u.test(judgeAccessKey) ||
+        [env.STT_CLIENT_TOKEN, env.OPENAI_API_KEY, env.DEEPGRAM_API_KEY, env.DEEPSEEK_API_KEY].includes(judgeAccessKey)) {
+      throw new Error('JUDGE_ACCESS_KEY requires public deployment and a separate random 32-byte base64url key.');
+    }
+    judgeAccessExpiresAt = Date.parse(judgeDeadline);
+    if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z$/u.test(judgeDeadline ?? '') || !Number.isFinite(judgeAccessExpiresAt) ||
+        new Date(judgeAccessExpiresAt).toISOString().replace('.000Z', 'Z') !== judgeDeadline.replace('.000Z', 'Z')) {
+      throw new Error('JUDGE_ACCESS_EXPIRES_AT must be an explicit UTC ISO date and time.');
+    }
+    // Keep the normal service healthy if an invitation expires before a restart.
+    // Issuance and authorization enforce this deadline for every judge request.
+  }
   return { port, origins, deployment, host: isPublic ? '0.0.0.0' : '127.0.0.1',
     publicUrl: publicEndpoint?.origin, publicHost: publicEndpoint?.host, webRoot: isPublic ? env.WEB_ROOT || undefined : undefined,
     clientToken: env.STT_CLIENT_TOKEN, sttProvider, openaiSttModel, deepgramKey: env.DEEPGRAM_API_KEY,
     deepseekKey: env.DEEPSEEK_API_KEY, deepseekModel, conversionTimeoutMs: 12000,
-    openaiKey, openaiVisionModel, visionTimeoutMs: 25000 };
+    openaiKey, openaiVisionModel, visionTimeoutMs: 25000, judgeAccessKey, judgeAccessExpiresAt };
 }
 
 export function validateAudio(body) {
